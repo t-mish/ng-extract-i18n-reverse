@@ -22,25 +22,6 @@ function selectTargetFile(translation: string[] | string | undefined): string | 
     return sorted[0];
 }
 
-function getFormatFromTargetFile(targetFilePath: string | undefined, tree: Tree, context: SchematicContext): 'xlf' | 'xlf2' | undefined {
-    if (targetFilePath) {
-        const content = tree.read(targetFilePath)?.toString();
-        const m = content?.match(/<xliff[^>]*version=["']([^"']+)["']/i)
-        if (m) {
-            switch (m[1]) {
-                case '1.2':
-                    return 'xlf';
-                case '2.0':
-                    return 'xlf2';
-                default:
-                    context.logger.warn(`unexpected xliff version in ${targetFilePath}: ${m[1]}`);
-                    return undefined;
-            }
-        }
-    }
-    return undefined
-}
-
 function getOutFileRelativeToOutputPath(outFile: string, outputPathFromExtractI18nOptions: string | undefined, outputPathFromTargetFiles: string | undefined, tree: Tree, outputPath: string): Path {
 
     const potentialBasePathsForOutFile = [
@@ -68,7 +49,7 @@ export function ngAdd(_options: Schema): Rule {
             // alternative: search tree for *.xlf? --> not performant, contains node_modules
             const files = getTargetFiles(i18nExtension);
             if (!files?.length) {
-                context.logger.warn('Could not infer translation target files, please setup angular i18n and re-run `ng add ng-extract-i18n-merge`: https://angular.io/guide/i18n-common-merge#define-locales-in-the-build-configuration');
+                context.logger.warn('Could not infer translation target files, please setup angular i18n and re-run `ng add ng-extract-i18n-reverse`: https://angular.io/guide/i18n-common-merge#define-locales-in-the-build-configuration');
             } else {
                 context.logger.info('Found target translation files: ' + JSON.stringify(files));
             }
@@ -83,9 +64,10 @@ export function ngAdd(_options: Schema): Rule {
             const browserTarget = existingI18nTargetOptions?.browserTarget as string | undefined ?? `${projectName}:build`;
 
             // infer format:
-            const formatFromExtractI18nOptions = existingI18nTargetOptions?.format as Options['format'] | undefined;
-            const formatFromTargetFiles = getFormatFromTargetFile(files?.[0], tree, context);
-            const format: Options['format'] = formatFromExtractI18nOptions ?? formatFromTargetFiles ?? 'xlf2';
+            // const formatFromExtractI18nOptions = existingI18nTargetOptions?.format as Options['format'] | undefined;
+            // const formatFromTargetFiles = getFormatFromTargetFile(files?.[0], tree, context);
+            // const format: Options['format'] = formatFromExtractI18nOptions ?? formatFromTargetFiles ?? 'xlf2';
+            const format: Options['format'] = existingI18nTargetOptions?.format as Options['format'] | 'arb'
             context.logger.info(`inferred format: ${format}`);
 
             // remove path from files
@@ -105,12 +87,12 @@ export function ngAdd(_options: Schema): Rule {
             }
             if (target) {
                 context.logger.info(`Overwriting previous extract-i18n entry in project ${projectName}.`);
-                target.builder = 'ng-extract-i18n-merge:ng-extract-i18n-merge';
+                target.builder = 'ng-extract-i18n-reverse:ng-extract-i18n-reverse';
                 target.options = builderOptions;
             } else {
                 projectWorkspace.targets.add({
                     name: 'extract-i18n',
-                    builder: 'ng-extract-i18n-merge:ng-extract-i18n-merge',
+                    builder: 'ng-extract-i18n-reverse:ng-extract-i18n-reverse',
                     options: builderOptions,
                 });
             }

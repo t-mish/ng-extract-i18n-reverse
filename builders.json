@@ -1,9 +1,9 @@
 {
   "builders": {
-    "ng-extract-i18n-merge": {
+    "ng-extract-i18n-reverse": {
       "implementation": "./dist/src/builder.js",
       "schema": "./src/schema.json",
-      "description": "Extract and merge i18n translation units"
+      "description": "Extract and reverse-merge i18n translation units"
     }
   }
 }

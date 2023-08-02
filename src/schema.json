@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/schema",
-  "title": "Translation extraction and merge for Angular.",
-  "description": "Extraction and merge options",
+  "title": "Translation extraction and reverse-merge for Angular.",
+  "description": "Extraction and reverse-merge options",
   "type": "object",
   "properties": {
     "format": {

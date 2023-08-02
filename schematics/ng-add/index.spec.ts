@@ -48,7 +48,7 @@ describe('ngAdd', () => {
     it('works', async () => {
         const tree = await runSchematic(runner, 'ng-add', {}, appTree);
         expect(norm(tree.readContent('/angular.json'))).toContain(norm('"extract-i18n": {\n' +
-            '          "builder": "ng-extract-i18n-merge:ng-extract-i18n-merge",\n' +
+            '          "builder": "ng-extract-i18n-reverse:ng-extract-i18n-reverse",\n' +
             '          "options": {\n' +
             '            "browserTarget": "bar:build",\n' +
             '            "format": "xlf2",\n' +
@@ -74,7 +74,7 @@ describe('ngAdd', () => {
         const tree = await runSchematic(runner, 'ng-add', {}, appTree);
 
         expect(norm(tree.readContent('/angular.json'))).toContain(norm('"extract-i18n": {\n' +
-            '          "builder": "ng-extract-i18n-merge:ng-extract-i18n-merge",\n' +
+            '          "builder": "ng-extract-i18n-reverse:ng-extract-i18n-reverse",\n' +
             '          "options": {\n' +
             '            "browserTarget": "bar:build",\n' +
             '            "format": "xlf",\n' +
@@ -107,7 +107,7 @@ describe('ngAdd', () => {
         const tree = await runSchematic(runner, 'ng-add', {}, appTree);
 
         expect(norm(tree.readContent('/angular.json'))).toContain(norm('"extract-i18n": {\n' +
-            '          "builder": "ng-extract-i18n-merge:ng-extract-i18n-merge",\n' +
+            '          "builder": "ng-extract-i18n-reverse:ng-extract-i18n-reverse",\n' +
             '          "options": {\n' +
             '            "browserTarget": "bar:build",\n' +
             '            "format": "xlf",\n' +
@@ -133,7 +133,7 @@ describe('ngAdd', () => {
         const tree = await runSchematic(runner, 'ng-add', {}, appTree);
 
         expect(norm(tree.readContent('/angular.json'))).toContain(norm('"extract-i18n": {\n' +
-            '          "builder": "ng-extract-i18n-merge:ng-extract-i18n-merge",\n' +
+            '          "builder": "ng-extract-i18n-reverse:ng-extract-i18n-reverse",\n' +
             '          "options": {\n' +
             '            "browserTarget": "bar:build",\n' +
             '            "format": "xlf",\n' +
@@ -155,7 +155,7 @@ describe('ngAdd', () => {
         const tree = await runSchematic(runner, 'ng-add', {}, appTree);
 
         expect(norm(tree.readContent('/angular.json'))).toContain(norm('"extract-i18n": {\n' +
-            '          "builder": "ng-extract-i18n-merge:ng-extract-i18n-merge",\n' +
+            '          "builder": "ng-extract-i18n-reverse:ng-extract-i18n-reverse",\n' +
             '          "options": {\n' +
             '            "browserTarget": "bar:build",\n' +
             '            "format": "xlf",\n' +
@@ -173,7 +173,7 @@ describe('ngAdd', () => {
             }
         };
         angularJson.projects.bar.architect['extract-i18n'] = {
-            builder: 'ng-extract-i18n-merge:ng-extract-i18n-merge', options: {
+            builder: 'ng-extract-i18n-reverse:ng-extract-i18n-reverse', options: {
                 format: 'xlf',
                 someUnrecognizedOption: 'some_random_path'
             }
@@ -183,7 +183,7 @@ describe('ngAdd', () => {
         const tree = await runSchematic(runner, 'ng-add', {}, appTree);
 
         expect(norm(tree.readContent('/angular.json'))).toContain(norm('"extract-i18n": {\n' +
-            '          "builder": "ng-extract-i18n-merge:ng-extract-i18n-merge",\n' +
+            '          "builder": "ng-extract-i18n-reverse:ng-extract-i18n-reverse",\n' +
             '          "options": {\n' +
             '            "browserTarget": "bar:build",\n' +
             '            "format": "xlf",\n' +
@@ -212,7 +212,7 @@ describe('ngAdd', () => {
         const tree = await runSchematic(runner, 'ng-add', {}, appTree);
 
         expect(norm(tree.readContent('/angular.json'))).toContain(norm('"extract-i18n": {\n' +
-            '          "builder": "ng-extract-i18n-merge:ng-extract-i18n-merge",\n' +
+            '          "builder": "ng-extract-i18n-reverse:ng-extract-i18n-reverse",\n' +
             '          "options": {\n' +
             '            "browserTarget": "bar:build",\n' +
             '            "format": "xlf2",\n' +
