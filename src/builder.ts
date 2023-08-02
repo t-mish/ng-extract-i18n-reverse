@@ -5,11 +5,12 @@ import {promises as fs} from 'fs';
 import {xmlNormalize} from 'xml_normalize/dist/src/xmlNormalize';
 import {XmlDocument, XmlElement} from 'xmldoc';
 import {Evaluator} from 'xml_normalize/dist/src/xpath/simpleXPath';
+import { ArbDifference, getDifferenceBetweenArbObjects } from './arbUtils';
 import {readFileIfExists} from './fileUtils';
 import {findLexClosestIndex} from './lexUtils';
 
 export interface Options extends JsonObject {
-    format: 'xlf' | 'xlif' | 'xliff' | 'xlf2' | 'xliff2' | null
+    format: 'xlf' | 'xlif' | 'xliff' | 'xlf2' | 'xliff2' | 'arb' | null
     outputPath: string | null,
     sourceFile: string | null,
     targetFiles: string[],
@@ -24,7 +25,10 @@ export interface Options extends JsonObject {
     sort: 'idAsc' | 'stableAppendNew' | 'stableAlphabetNew',
     browserTarget: string,
     builderI18n: string,
-    verbose: boolean
+    verbose: boolean,
+    check: boolean,
+    targetPath: string
+    targetFile: string;
 }
 
 const builder: ReturnType<typeof createBuilder> = createBuilder(extractI18nMergeBuilder);
@@ -87,6 +91,7 @@ function resetSortOrderStableAppendNew(originalTranslationSourceFile: string | n
 
 function resetSortOrderStableAlphabetNew(originalTranslationSourceFile: string | null, updatedTranslationSourceFile: string, idPath: string, idMapping: { [oldId: string]: string }, options: Options): string {
     const resetStable = resetSortOrderStable(originalTranslationSourceFile, updatedTranslationSourceFile, idPath, idMapping);
+
     resetStable.newUnits
         .sort((a, b) => a.attr.id.toLowerCase().localeCompare(b.attr.id.toLowerCase()))
         .forEach(newUnit => {
@@ -115,14 +120,53 @@ async function extractI18nMergeBuilder(options: Options, context: BuilderContext
     if (!options.verbose) {
         console.debug = () => null; // prevent debug output from xml_normalize and xliff-simple-merge
     }
+
     context.logger.debug(`options: ${JSON.stringify(options)}`);
+
     const outputPath = options.outputPath as string || '.';
     const format = options.format as string || 'xlf';
     const isXliffV2 = format.includes('2');
 
     context.logger.info('running "extract-i18n" ...');
+
     const sourcePath = join(normalize(outputPath), options.sourceFile ?? 'messages.xlf');
     const translationSourceFileOriginal = await readFileIfExists(sourcePath);
+
+    if (options.check) {
+        if (options.format !== 'arb'){
+            return {success: false, error: `Current ${options.format} file format is not supported for check operation`};
+        }
+
+        if (!options.targetPath) {
+            return {success: false, error: `No target path specified for check operation`};
+        }
+
+        if (!options.targetFile) {
+            return {success: false, error: `No target file specified for check operation`};
+        }
+
+        const targetPath = join(normalize(options.targetPath), options.targetFile);
+        const translationTargetFileOriginal = await readFileIfExists(targetPath);
+
+        if (!translationSourceFileOriginal) {
+            return {success: false, error: `Couldn't read the specified source file`};
+        }
+
+        if (!translationTargetFileOriginal) {
+            return {success: false, error: `Couldn't read the specified target file`};
+        }
+
+        const obj1 = JSON.parse(translationSourceFileOriginal);
+        const obj2 = JSON.parse(translationTargetFileOriginal);
+
+        const diff: ArbDifference[] = getDifferenceBetweenArbObjects(obj1, obj2);
+
+        if (diff.length !== 0) {
+            return {success: false, error: `There are difference in the following files:\n\n${diff.map((diffItem) => `${diffItem.original} !== ${diffItem.result}\n${diffItem.files.map((file) => ` - ${file.file}\n   Line: ${file.start.line}`).join(`\n`)}`).join(`\n\n`)}\n`}
+        } else {
+            return {success: true};
+        }
+    }
 
     const extractI18nRun = await context.scheduleBuilder(options.builderI18n ?? '@angular-devkit/build-angular:extract-i18n', {
         browserTarget: options.browserTarget,
@@ -131,13 +175,17 @@ async function extractI18nMergeBuilder(options: Options, context: BuilderContext
         format,
         progress: false
     }, {target: context.target, logger: context.logger.createChild('extract-i18n')});
+
     const extractI18nResult = await extractI18nRun.result;
+
     if (!extractI18nResult.success) {
         return {success: false, error: `"extract-i18n" failed: ${extractI18nResult.error}`};
     }
+
     context.logger.info(`extracted translations successfully`);
 
     context.logger.info(`normalize ${sourcePath} ...`);
+
     const translationSourceFile = await fs.readFile(sourcePath, 'utf8');
 
     const removeIdsWithPrefixPaths = (options.removeIdsWithPrefix ?? []).map(removePrefix => isXliffV2 ? `/xliff/file/unit[starts-with(@id,"${removePrefix}")]` : `/xliff/file/body/trans-unit[starts-with(@id,"${removePrefix}")]`);
@@ -147,10 +195,12 @@ async function extractI18nMergeBuilder(options: Options, context: BuilderContext
         ...(removeContextPaths(options.includeContext === true || options.includeContext === 'sourceFileOnly')),
         ...removeIdsWithPrefixPaths
     ];
+
     const removePathsTargetFiles = [
         ...(removeContextPaths(options.includeContext === true)),
         ...removeIdsWithPrefixPaths
     ];
+
     const idPath = isXliffV2 ? '/xliff/file/unit/@id' : '/xliff/file/body/trans-unit/@id';
     const sort: Options['sort'] = options.sort ?? 'stableAppendNew';
     const normalizedTranslationSourceFile = xmlNormalize({
@@ -195,5 +245,6 @@ async function extractI18nMergeBuilder(options: Options, context: BuilderContext
     }
 
     context.logger.info('finished i18n merging and normalizing');
+
     return {success: true};
 }

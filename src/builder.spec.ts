@@ -8,6 +8,8 @@ import Mock = jest.Mock;
 
 const MESSAGES_XLF_PATH = 'builder-test/messages.xlf';
 const MESSAGES_FR_XLF_PATH = 'builder-test/messages.fr.xlf';
+const MESSAGES_ARB_SOURCE_PATH = 'builder-test/messages.arb';
+const MESSAGES_ARB_TARGET_PATH = 'builder-test/messages.en-US.arb';
 
 describe('Builder', () => {
     let architect: Architect;
@@ -87,6 +89,223 @@ describe('Builder', () => {
             await rmSafe(MESSAGES_FR_XLF_PATH);
         }
     }
+
+    test('should succeed when there are no difference in ARB files', async () => {
+        const sourceDummyContent = `
+        {
+          "@@locale": "en",
+          "paginationShow25Items": "Show 25 items per page",
+          "@paginationShow25Items": {
+            "description": "Pagination show 25 items",
+            "x-locations": [
+              {
+                "file": "libs/shared/table/src/lib/pagination/pagination.component.ts",
+                "start": { "line": "47", "column": "26" },
+                "end": { "line": "47", "column": "99" }
+              }
+            ]
+          },
+          "paginationShow50Items": "Show 50 items per page",
+          "@paginationShow50Items": {
+            "description": "Pagination show 50 items",
+            "x-locations": [
+              {
+                "file": "libs/shared/table/src/lib/pagination/pagination.component.ts",
+                "start": { "line": "51", "column": "26" },
+                "end": { "line": "51", "column": "99" }
+              }
+            ]
+          }
+        }`
+
+        const targetDummyContent = `
+        {
+          "@@locale": "en",
+          "paginationShow25Items": "Show 25 items per page",
+          "@paginationShow25Items": {
+            "description": "Pagination show 25 items",
+            "x-locations": [
+              {
+                "file": "libs/shared/table/src/lib/pagination/pagination.component.ts",
+                "start": { "line": "47", "column": "26" },
+                "end": { "line": "47", "column": "99" }
+              }
+            ]
+          },
+          "paginationShow50Items": "Show 50 items per page",
+          "@paginationShow50Items": {
+            "description": "Pagination show 50 items",
+            "x-locations": [
+              {
+                "file": "libs/shared/table/src/lib/pagination/pagination.component.ts",
+                "start": { "line": "51", "column": "26" },
+                "end": { "line": "51", "column": "99" }
+              }
+            ]
+          }
+        }`
+
+        await fs.writeFile(MESSAGES_ARB_SOURCE_PATH, sourceDummyContent, 'utf8');
+        await fs.writeFile(MESSAGES_ARB_TARGET_PATH, targetDummyContent, 'utf8');
+
+        try {
+            // A "run" can have multiple outputs, and contains progress information.
+            const run = await architect.scheduleTarget({project: 'builder-test', target: 'extract-i18n-merge'}, {
+                format: 'arb',
+                outputPath: 'builder-test',
+                sourceFile: 'messages.arb',
+                targetPath: 'builder-test',
+                targetFile: 'messages.en-US.arb',
+                check: true
+            });
+
+            // The "result" member (of type BuilderOutput) is the next output.
+            const result = await run.result;
+            expect(result.success).toBeTruthy();
+
+            // Stop the builder from running. This stops Architect from keeping
+            // the builder-associated states in memory, since builders keep waiting
+            // to be scheduled.
+            await run.stop();
+        } finally {
+            await rmSafe(MESSAGES_ARB_SOURCE_PATH);
+            await rmSafe(MESSAGES_ARB_TARGET_PATH);
+        }
+    });
+
+    test('should fail when there are difference in ARB files', async () => {
+        const sourceDummyContent = `
+        {
+          "@@locale": "en",
+          "paginationShow25Items": "Show 25 items per page",
+          "@paginationShow25Items": {
+            "description": "Pagination show 25 items",
+            "x-locations": [
+              {
+                "file": "libs/shared/table/src/lib/pagination/pagination.component.ts",
+                "start": { "line": "47", "column": "26" },
+                "end": { "line": "47", "column": "99" }
+              }
+            ]
+          },
+          "paginationShow50Items": "Show 50 items per page",
+          "@paginationShow50Items": {
+            "description": "Pagination show 50 items",
+            "x-locations": [
+              {
+                "file": "libs/shared/table/src/lib/pagination/pagination.component.ts",
+                "start": { "line": "51", "column": "26" },
+                "end": { "line": "51", "column": "99" }
+              }
+            ]
+          },
+          "paginationShow150Items": "Show 150 items per page",
+          "@paginationShow150Items": {
+            "description": "Pagination show 150 items",
+            "x-locations": [
+              {
+                "file": "libs/shared/table/src/lib/pagination/pagination.component.ts",
+                "start": { "line": "55", "column": "26" },
+                "end": { "line": "55", "column": "102" }
+              }
+            ]
+          },
+          "paginationShow250Items": "Show 250 items per page",
+          "@paginationShow250Items": {
+            "description": "Pagination show 250 items",
+            "x-locations": [
+              {
+                "file": "libs/shared/table/src/lib/pagination/pagination.component.ts",
+                "start": { "line": "59", "column": "26" },
+                "end": { "line": "59", "column": "102" }
+              }
+            ]
+          }
+        }`
+
+        const targetDummyContent = `
+        {
+          "@@locale": "en",
+          "paginationShow25Items": "Show 25 items per page 123",
+          "@paginationShow25Items": {
+            "description": "Pagination show 25 items",
+            "x-locations": [
+              {
+                "file": "libs/shared/table/src/lib/pagination/pagination.component.ts",
+                "start": { "line": "47", "column": "26" },
+                "end": { "line": "47", "column": "99" }
+              }
+            ]
+          },
+          "paginationShow50Items": "Show 5 items per page",
+          "@paginationShow50Items": {
+            "description": "Pagination show 50 items",
+            "x-locations": [
+              {
+                "file": "libs/shared/table/src/lib/pagination/pagination.component.ts",
+                "start": { "line": "51", "column": "26" },
+                "end": { "line": "51", "column": "99" }
+              }
+            ]
+          },
+          "paginationShow150Items": "Show 150 items pere page",
+          "@paginationShow150Items": {
+            "description": "Pagination show 150 items",
+            "x-locations": [
+              {
+                "file": "libs/shared/table/src/lib/pagination/pagination.component.ts",
+                "start": { "line": "55", "column": "26" },
+                "end": { "line": "55", "column": "102" }
+              },
+              {
+                "file": "libs/shared/table/src/lib/pagination/pag.component.ts",
+                "start": { "line": "30", "column": "26" },
+                "end": { "line": "55", "column": "102" }
+              }
+            ]
+          },
+          "paginationShow250Items": "Show 250 item per page",
+          "@paginationShow250Items": {
+            "description": "Pagination show 250 items",
+            "x-locations": [
+              {
+                "file": "libs/shared/table/src/lib/pagination/pagination.component.ts",
+                "start": { "line": "59", "column": "26" },
+                "end": { "line": "59", "column": "102" }
+              }
+            ]
+          }
+        }`
+
+        await fs.writeFile(MESSAGES_ARB_SOURCE_PATH, sourceDummyContent, 'utf8');
+        await fs.writeFile(MESSAGES_ARB_TARGET_PATH, targetDummyContent, 'utf8');
+
+        try {
+            // A "run" can have multiple outputs, and contains progress information.
+            const run = await architect.scheduleTarget({project: 'builder-test', target: 'extract-i18n-merge'}, {
+                format: 'arb',
+                outputPath: 'builder-test',
+                sourceFile: 'messages.arb',
+                targetPath: 'builder-test',
+                targetFile: 'messages.en-US.arb',
+                check: true
+            });
+
+            // The "result" member (of type BuilderOutput) is the next output.
+            const result = await run.result;
+            expect(result.success).toBeFalsy();
+
+            console.log(result.error);
+
+            // Stop the builder from running. This stops Architect from keeping
+            // the builder-associated states in memory, since builders keep waiting
+            // to be scheduled.
+            await run.stop();
+        } finally {
+            await rmSafe(MESSAGES_ARB_SOURCE_PATH);
+            await rmSafe(MESSAGES_ARB_TARGET_PATH);
+        }
+    });
 
     test('should fail if extract-i18n fails', async () => {
         architectHost.addBuilder('@angular-devkit/build-angular:extract-i18n', createBuilder(() => ({success: false}))); // dummy builder

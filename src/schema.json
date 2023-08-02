@@ -10,7 +10,8 @@
         "xlif",
         "xliff",
         "xlf2",
-        "xliff2"
+        "xliff2",
+        "arb"
       ],
       "description": "Format for translation files. If unset default config from extract-i18n target is used."
     },
@@ -29,6 +30,14 @@
         "type": "string"
       },
       "description": "Translation files for each target language. Paths are assumed to be relative to 'outputPath'."
+    },
+    "targetPath": {
+      "type": "string",
+      "description": "Path to target file for further comparison"
+    },
+    "targetFile": {
+      "type": "string",
+      "description": "Translation target file which is used for comparison"
     },
     "sourceLanguageTargetFile": {
       "type": "string",
@@ -112,6 +121,11 @@
       "type": "boolean",
       "default": false,
       "description": "Whether to log extended output to the console."
+    },
+    "check": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether to compare current target file with it's source"
     }
   },
   "additionalProperties": false,
