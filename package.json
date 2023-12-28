@@ -1,6 +1,6 @@
 {
   "name": "ng-extract-i18n-reverse",
-  "version": "2.7.0",
+  "version": "0.0.1",
   "description": "Extract and reverse-merge i18n AMB translation files for angular projects.",
   "main": "index.js",
   "module": "index.mjs",
