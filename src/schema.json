@@ -126,6 +126,11 @@
       "type": "boolean",
       "default": false,
       "description": "Whether to compare current target file with it's source"
+    },
+    "checkModifiedDate": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether to check current target file's modified date with source file's date"
     }
   },
   "additionalProperties": false,

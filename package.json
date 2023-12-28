@@ -3,8 +3,10 @@
   "version": "2.7.0",
   "description": "Extract and reverse-merge i18n AMB translation files for angular projects.",
   "main": "index.js",
+  "module": "index.mjs",
   "builders": "builders.json",
   "schematics": "./schematics/collection.json",
+  "type": "module",
   "ng-add": {
     "save": "devDependencies"
   },
@@ -38,6 +40,7 @@
     "@angular-devkit/core": "^16.1.6",
     "@angular-devkit/schematics": "^16.1.6",
     "@schematics/angular": "^16.1.6",
+    "terminal-link": "^3.0.0",
     "xliff-simple-merge": "~1.0.2",
     "xml_normalize": "^1.0.0",
     "xmldoc": "~1.1.4"

@@ -2,8 +2,8 @@ import {Architect, createBuilder} from '@angular-devkit/architect';
 import {TestingArchitectHost} from '@angular-devkit/architect/testing';
 import {schema} from '@angular-devkit/core';
 import {promises as fs} from 'fs';
-import builder, {Options} from './builder';
-import {rmSafe} from './rmSafe';
+import builder from './builder.js';
+import {rmSafe} from './rmSafe.js';
 import Mock = jest.Mock;
 
 const MESSAGES_ARB_SOURCE_PATH = 'builder-test/messages.arb';

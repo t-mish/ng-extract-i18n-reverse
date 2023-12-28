@@ -1,6 +1,6 @@
 import {promises as fs} from 'fs';
-import {readFileIfExists} from './fileUtils';
-import {rmSafe} from './rmSafe';
+import {readFileIfExists} from './fileUtils.js';
+import {rmSafe} from './rmSafe.js';
 
 describe('fileUtils', () => {
     it('should return file contents if file is present', async () => {

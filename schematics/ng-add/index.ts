@@ -1,8 +1,8 @@
 import {Rule, SchematicContext, SchematicsException, Tree} from '@angular-devkit/schematics';
 import {updateWorkspace} from '@schematics/angular/utility/workspace';
-import {Schema} from './schema';
+import {Schema} from './schema.js';
 import {JsonArray, JsonObject, normalize, Path, relative} from '@angular-devkit/core';
-import {Options} from '../../src/builder';
+import {Options} from '../../src/builder.js';
 
 function getTargetFiles(i18nExtension: JsonObject | undefined): string[] {
     const locales = i18nExtension?.locales ? (Object.values(i18nExtension?.locales) as JsonArray | string[] | undefined) : undefined;

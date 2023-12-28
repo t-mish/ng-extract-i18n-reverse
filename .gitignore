@@ -4,3 +4,5 @@ node_modules
 examples
 coverage
 builder-test/*.xlf
+builder-test/messages.arb
+builder-test/messages.en-US.arb
