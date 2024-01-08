@@ -104,6 +104,8 @@ async function extractI18nMergeBuilder(options: Options, context: BuilderContext
                 return {success: false, error: `There are difference in the following files:\n\n${diffs.map((diffItem) => `${diffItem.value}\n${diffItem.files.map((file) => file).join(`\n`)}\n`).join(`\n`)}`}
             }
         }
+
+        return {success: true}
     }
 
     const extractI18nRun = await context.scheduleBuilder('@angular-devkit/build-angular:extract-i18n', {
